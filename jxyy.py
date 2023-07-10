@@ -1,10 +1,45 @@
 import requests
 import datetime
-from config import start_time
 from config import referer
-from config import Cookie
+from config import userName
+from config import pwd
 from config import stdid
 from config import bianhao as stateID
+from config import start_time
+import requests
+from bs4 import BeautifulSoup
+
+# 构造登录请求的URL和数据
+url = "http://glcdjx.gsjiapei.com/UserHome/StuBind"
+data = {
+    "userName": userName,
+    "pwd": pwd
+}
+
+# 构造会话对象，保持cookie
+session = requests.session()
+
+# 发送GET请求，获取登录页面的HTML代码
+response = session.get(url)
+
+# 解析HTML代码，找到账号和密码的input标签，并填入账号密码
+soup = BeautifulSoup(response.text, "html.parser")
+username_input = soup.find("input", {"id": "userName"})
+password_input = soup.find("input", {"id": "pwd"})
+username_input["value"] = data["userName"]
+password_input["value"] = data["pwd"]
+
+# 模拟点击登录按钮，发送POST请求，获取登录后的cookie
+login_button = soup.find("input", {"id": "btnLogin"})
+response = session.post(url, data=data)
+
+# 获取登录后的cookie
+cookie = session.cookies.get_dict()
+print(cookie)
+
+#获取该cookie下的ASP.NET_SessionId的值
+Cookie = cookie['ASP.NET_SessionId']
+
 start_time = str(start_time)
 #获取当前日期
 end_time = datetime.datetime.now().strftime('%Y-%m-%d')
